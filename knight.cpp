@@ -1,12 +1,11 @@
 #include "knight.h"
+string* file = new string [3];
 int eventCount = 0;
+string mushFile, merlinFile, alceFile;
 int* event = new int [100];
 int* mush = new int [100];
 string* merlin = new string [100];
 int alce[100][100];
-string mushInput;
-string merlinInput;
-string alceInput;
 int maxi, mini, mtx, mti, maxi2, mini2, max2_3x, max2_3i, pos, mushSize;
 int n9;
 int r1, c1;
@@ -216,19 +215,25 @@ void mushType4(int* arr, int arraySize, int &max2_3x, int &max2_3i, int &HP) {
     }
     HP = HP - (max2_3x + max2_3i);
 }
-void readMush(string mushInput, int* mush, int &mushSize) {
-    int* data = new int [100];
-    mushInput = "tc1_mush_ghost";
-    fstream f(mushInput);
-    int x;
-    int i = 0;
-    while (f >> x) {
-        data[i] = x;
-        i++;
+int chartoint(char n){
+    return (int) n - 48;
+}
+void readMush(string mushFile, int* mush, int &mushSize) {
+    int data;
+    fstream f(mushFile);
+    f >> data;
+    mushSize = data;
+    fstream f1(mushFile);
+    string strSequence;
+    getline(f1, strSequence);
+    getline(f1, strSequence);
+    int k = 0;
+    for (int j = 0; j < strSequence.length(); j++) {
+        if(strSequence[j] >= '1' && strSequence[j] <= '4') {
+            mush[k] = chartoint(strSequence[j]);
+            k++;
+        }
     }
-    mushSize = data[0];
-    for (int j = 0; j < mushSize; j++) 
-        mush[j] = data[j + 1];
 }
 bool enhanced(string str) {
     int m = 0, e = 0, r = 0, l = 0, i = 0, n = 0;
@@ -282,9 +287,8 @@ void merlinBless(string *merlin, int n9, int &HP) {
         }
     }
 }
-void readMerlin(string merlinInput, string* merlin, int &n9) {
-    merlinInput = "tc1_merlin_pack";
-    fstream f(merlinInput);
+void readMerlin(string merlinFile, string* merlin, int &n9) {
+    fstream f(merlinFile);
     f >> n9;
     string line;
     getline(f, line);
@@ -335,10 +339,9 @@ void acleBless(int alce[][100], int r1, int c1, int &remedy, int &maidenkiss, in
     }
     
 }
-void readAcle(string alceInput, int alce[][100], int &r1, int &c1) {
+void readAcle(string alceFile, int alce[][100], int &r1, int &c1) {
     int *data = new int[100];
-    alceInput = "tc1_aclepius_pack";
-    fstream f(alceInput);
+    fstream f(alceFile);
     int x;
     int i = 0;
     while (f >> x){
@@ -357,9 +360,8 @@ void readAcle(string alceInput, int alce[][100], int &r1, int &c1) {
         }
     }
 }
-void readFile(string file_input, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, int* event, int &eventCount) {
+void readFile(string file_input, string *file, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, int* event, int &eventCount, string &mushFile, string &merlinFile, string &alceFile) {
     int* data = new int[100];
-    file_input = "tc1_input";
     fstream f(file_input);
     int x;
     int i = 0;
@@ -371,6 +373,22 @@ void readFile(string file_input, int & HP, int & level, int & remedy, int & maid
     HP = data[0]; level = data[1]; remedy = data[2]; maidenkiss = data[3]; phoenixdown = data[4];
     for (int k = 1; k <= i - 5; k++)
     event[k] = data[k + 4];
+    fstream f1(file_input);
+    string line;
+    int k = 0;
+    while (k < 3) {
+        getline(f1, line);
+        k++;
+    }
+    int m = 0;
+    for (int n = 0; n < 3; n ++) {
+        while (line[m] != ',' && line[m + 1] != ' ' && m < line.length()) {
+            file[n] += line[m];
+            m++;
+        }
+        m += 2;
+    }
+    mushFile = file[0]; merlinFile = file[1]; alceFile = file[2];
 }
 void display(int HP, int level, int remedy, int maidenkiss, int phoenixdown, int rescue) {
     cout << "HP=" << HP
@@ -381,10 +399,10 @@ void display(int HP, int level, int remedy, int maidenkiss, int phoenixdown, int
         << ", rescue=" << rescue << endl;
 }
 void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, int & rescue) {
-    readFile(file_input, HP, level, remedy, maidenkiss, phoenixdown, event, eventCount);
-    readMush(mushInput, mush, mushSize);
-    readMerlin(merlinInput, merlin, n9);
-    readAcle(alceInput, alce, r1, c1);
+    readFile(file_input, file, HP, level, remedy, maidenkiss, phoenixdown, event, eventCount, mushFile, merlinFile, alceFile);
+    readMush(mushFile, mush, mushSize);
+    readMerlin(merlinFile, merlin, n9);
+    readAcle(alceFile, alce, r1, c1);
     int tempHP = 0;
     int tempLV = 0;
     int tiny = -1;
@@ -392,20 +410,13 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
     int maxHP = HP;
     int event18 = 0;
     int event19 = 0; // only meet once
-    cout << remedy << " " << maidenkiss << " " << phoenixdown << endl;
-    cout << r1 << " " << c1 << endl;
-    for (int i = 0; i < r1; i++) {
-        for (int j = 0; j < c1; j++)
-            cout << alce[i][j] << " ";
-        cout << endl;
-    }
     for (int i = 1; i <= eventCount; i++) {
-        if (event18) {
+        if (event18 && event[i] == 18) {
             rescue = rescueStatus(i, eventCount, HP, phoenixdown);
             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
             continue;
         }
-        if (event19) {
+        if (event19 && event[i] == 19) {
             rescue = rescueStatus(i, eventCount, HP, phoenixdown);
             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
             continue;
