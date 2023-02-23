@@ -1,8 +1,5 @@
 #include "knight.h"
 string* file = new string [3];
-int eventCount = 0;
-string mushFile, merlinFile, alceFile;
-int* event = new int [100];
 int* mush = new int [100];
 string* merlin = new string [100];
 int alce[100][100];
@@ -34,11 +31,11 @@ int levelO(int i) {
     return level;
 }
 int levelCheck (int &level) {
-    if (level > MAX_LEVEL) return MAX_LEVEL;
+    if (level > 10) return 10;
     else return level;
 }
 int itemCheck (int &item) {
-    if(item > MAX_ITEM) return MAX_ITEM;
+    if(item > 99) return 99;
     else return item;
 }
 int HPCheck (int HP, int maxHP) {
@@ -133,7 +130,7 @@ void mushType1(int* arr, int arraySize ,int &mini, int &maxi, int &HP) {
         if (arr[j] <= minN) {
             mini = j;
             minN == arr[j];
-        } 
+        }
     }
     HP = HP - (maxi + mini);
 }
@@ -158,7 +155,10 @@ void mushType2(int* arr, int arraySize ,int &mtx, int &mti, int &HP) {
     }
     HP = HP - (mtx + mti);
 }
-void mushType3(int* arr, int arraySize, int &maxi2,int &mini2, int &HP) {
+void mushType3(int* arr1, int arraySize, int &maxi2,int &mini2, int &HP) {
+    int *arr = new int [100];
+    for (int k = 0; k <= arraySize; k++)
+    arr[k] = arr1[k];
     for (int k = 0; k <= arraySize; k ++) {
         if (arr[k] < 0) arr[k] = - arr[k];
         arr[k] = (17 * arr[k] + 9) % 257;
@@ -168,13 +168,11 @@ void mushType3(int* arr, int arraySize, int &maxi2,int &mini2, int &HP) {
     for (int j = 0; j < arraySize; j++)
     {
         if (arr[j] >= maxN) {
-            maxi = j;
             maxN = arr[j];
         }
         if (arr[j] <= minN) {
-            mini = j;
-            minN == arr[j];
-        } 
+            minN = arr[j];
+        }
     }
     maxi2 = 0;
     mini2 = 0;
@@ -182,28 +180,34 @@ void mushType3(int* arr, int arraySize, int &maxi2,int &mini2, int &HP) {
     while (minN != arr[mini2]) mini2 ++;
     HP = HP - (maxi2 + mini2);
 }
-void mushType4(int* arr, int arraySize, int &max2_3x, int &max2_3i, int &HP) {
+void mushType4(int* arr1, int arraySize, int &max2_3x, int &max2_3i, int &HP) {
+    int *arr = new int [100];
+    for (int k = 0; k <= arraySize; k++)
+    arr[k] = arr1[k];
     for (int k = 0; k <= arraySize; k ++) {
         if (arr[k] < 0) arr[k] = - arr[k];
         arr[k] = (17 * arr[k] + 9) % 257;
     }
-    int maxN = arr[0];
+    if (arr[0] == arr[1] && arr[1] == arr[2]) {
+        max2_3x = -5;
+        max2_3i = -7;
+    }
+    else {
+        int maxN = arr[0];
     int minN = arr[0];
     for (int j = 0; j <= 2; j++)
     {
         if (arr[j] >= maxN) {
-            maxi = j;
             maxN = arr[j];
         }
         if (arr[j] <= minN) {
-            mini = j;
-            minN == arr[j];
-        } 
+            minN = arr[j];
+        }
     }
     int h = 0;
     max2_3i = 0;
     for (int j = 0; j <= 2; j++) {
-        if (arr[j] >  minN && arr[j] < maxN) {
+        if (arr[j] > minN && arr[j] < maxN) {
             h++;
             max2_3i = j;
             max2_3x = arr[j];
@@ -213,6 +217,7 @@ void mushType4(int* arr, int arraySize, int &max2_3x, int &max2_3i, int &HP) {
         max2_3x = minN;
         while(max2_3x != arr[max2_3i]) max2_3i ++;
     }
+    }
     HP = HP - (max2_3x + max2_3i);
 }
 int chartoint(char n){
@@ -220,20 +225,28 @@ int chartoint(char n){
 }
 void readMush(string mushFile, int* mush, int &mushSize) {
     int data;
-    fstream f(mushFile);
+    ifstream f;
+    f.open(mushFile);
     f >> data;
     mushSize = data;
-    fstream f1(mushFile);
+    f.close();
+    ifstream f1;
+    f1.open(mushFile);
     string strSequence;
     getline(f1, strSequence);
     getline(f1, strSequence);
-    int k = 0;
-    for (int j = 0; j < strSequence.length(); j++) {
-        if(strSequence[j] >= '1' && strSequence[j] <= '4') {
-            mush[k] = chartoint(strSequence[j]);
-            k++;
+    f1.close();
+    string *temp = new string [1000];
+    int h = 0;
+    for (int j = 0; j < mushSize; j++) {
+        while (strSequence[h] != ',' && h < strSequence.length()) {
+            temp[j] += strSequence[h];
+            h++;
         }
+        h++;
     }
+    for (int j = 0; j < mushSize; j++) 
+        mush[j] = stoi(temp[j]);
 }
 bool enhanced(string str) {
     int m = 0, e = 0, r = 0, l = 0, i = 0, n = 0;
@@ -288,7 +301,8 @@ void merlinBless(string *merlin, int n9, int &HP) {
     }
 }
 void readMerlin(string merlinFile, string* merlin, int &n9) {
-    fstream f(merlinFile);
+    ifstream f;
+    f.open(merlinFile);
     f >> n9;
     string line;
     getline(f, line);
@@ -296,6 +310,7 @@ void readMerlin(string merlinFile, string* merlin, int &n9) {
         getline(f, line);
         merlin[i] = line;
     }
+    f.close();
 }
 void acleBless(int alce[][100], int r1, int c1, int &remedy, int &maidenkiss, int &phoenixdown) {
     if (c1 > 3) {
@@ -337,11 +352,14 @@ void acleBless(int alce[][100], int r1, int c1, int &remedy, int &maidenkiss, in
             }
         }
     }
-    
+    remedy = itemCheck(remedy);
+    maidenkiss = itemCheck(maidenkiss);
+    phoenixdown = itemCheck(phoenixdown);
 }
 void readAcle(string alceFile, int alce[][100], int &r1, int &c1) {
     int *data = new int[100];
-    fstream f(alceFile);
+    ifstream f;
+    f.open(alceFile);
     int x;
     int i = 0;
     while (f >> x){
@@ -359,10 +377,12 @@ void readAcle(string alceFile, int alce[][100], int &r1, int &c1) {
             count++;
         }
     }
+    f.close();
 }
 void readFile(string file_input, string *file, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, int* event, int &eventCount, string &mushFile, string &merlinFile, string &alceFile) {
     int* data = new int[100];
-    fstream f(file_input);
+    ifstream f;
+    f.open(file_input);
     int x;
     int i = 0;
     while (f >> x){
@@ -373,7 +393,9 @@ void readFile(string file_input, string *file, int & HP, int & level, int & reme
     HP = data[0]; level = data[1]; remedy = data[2]; maidenkiss = data[3]; phoenixdown = data[4];
     for (int k = 1; k <= i - 5; k++)
     event[k] = data[k + 4];
-    fstream f1(file_input);
+    f.close();
+    ifstream f1;
+    f1.open(file_input);
     string line;
     int k = 0;
     while (k < 3) {
@@ -382,13 +404,14 @@ void readFile(string file_input, string *file, int & HP, int & level, int & reme
     }
     int m = 0;
     for (int n = 0; n < 3; n ++) {
-        while (line[m] != ',' && line[m + 1] != ' ' && m < line.length()) {
+        while (line[m] != ',' && m < line.length()) {
             file[n] += line[m];
             m++;
         }
-        m += 2;
+        m++;
     }
-    mushFile = file[0]; merlinFile = file[1]; alceFile = file[2];
+    f1.close();
+    mushFile = file[0]; merlinFile = file[2]; alceFile = file[1];
 }
 void display(int HP, int level, int remedy, int maidenkiss, int phoenixdown, int rescue) {
     cout << "HP=" << HP
@@ -399,10 +422,10 @@ void display(int HP, int level, int remedy, int maidenkiss, int phoenixdown, int
         << ", rescue=" << rescue << endl;
 }
 void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, int & rescue) {
+    string mushFile, merlinFile, alceFile;
+    int eventCount = 0;
+    int* event = new int [100];
     readFile(file_input, file, HP, level, remedy, maidenkiss, phoenixdown, event, eventCount, mushFile, merlinFile, alceFile);
-    readMush(mushFile, mush, mushSize);
-    readMerlin(merlinFile, merlin, n9);
-    readAcle(alceFile, alce, r1, c1);
     int tempHP = 0;
     int tempLV = 0;
     int tiny = -1;
@@ -483,7 +506,10 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                 }
             int damage = baseDamage * levelO(i) * 10;
             HP -= damage;
-            if (HP <= 0 && phoenixCheck(phoenixdown)) HP = maxHP;
+            if (HP <= 0 && phoenixCheck(phoenixdown)) {
+                HP = maxHP;
+                phoenixdown --;
+            }
             }
             cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
             rescue = rescueStatus(i, eventCount, HP, phoenixdown);
@@ -557,13 +583,17 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
             continue;
         }// event 12
         if (event[i] > 99) {
+            readMush(mushFile, mush, mushSize);
             string sequence = to_string(event[i]);
             sequence.erase(0,2);
             for (int j = 0; j < sequence.length(); j ++) {
                 switch (sequence[j]) {
                     case '1':
                         mushType1(mush, mushSize, mini, maxi, HP);
-                        if (HP <= 0 && phoenixCheck(phoenixdown)) HP = maxHP;
+                        if (HP <= 0 && phoenixCheck(phoenixdown)) {
+                            HP = maxHP;
+                            phoenixdown --;
+                        }
                         if (deadCheck(HP, phoenixdown)) {
                             rescue = 0;
                             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
@@ -572,7 +602,10 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                         break;
                     case '2':
                         mushType2(mush, mushSize, mtx, mti, HP);
-                        if (HP <= 0 && phoenixCheck(phoenixdown)) HP = maxHP;
+                        if (HP <= 0 && phoenixCheck(phoenixdown)) {
+                            HP = maxHP;
+                            phoenixdown --;
+                        }
                         if (deadCheck(HP, phoenixdown)) {
                             rescue = 0;
                             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
@@ -581,7 +614,10 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                         break;
                     case '3':
                         mushType3(mush, mushSize, maxi2, mini2, HP);
-                        if (HP <= 0 && phoenixCheck(phoenixdown)) HP = maxHP;
+                        if (HP <= 0 && phoenixCheck(phoenixdown)) {
+                            HP = maxHP;
+                            phoenixdown --;
+                        }
                         if (deadCheck(HP, phoenixdown)) {
                             rescue = 0;
                             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
@@ -590,12 +626,14 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                         break;
                     case '4':
                         mushType4(mush, mushSize, max2_3x, max2_3i, HP);
-                        if (HP <= 0 && phoenixCheck(phoenixdown)) HP = maxHP;
+                        if (HP <= 0 && phoenixCheck(phoenixdown)) {
+                            HP = maxHP;
+                            phoenixdown --;
+                        }
                         if (deadCheck(HP, phoenixdown)) {
                             rescue = 0;
                             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
                             return;
-
                         }
                         break;
                     default:
@@ -632,7 +670,9 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
             continue;
         } // event 17
         if (event[i] == 18) {
+            readMerlin(merlinFile, merlin, n9);
             merlinBless(merlin, n9, HP);
+            HP = HPCheck(HP, maxHP);
             event18++;
             rescue = rescueStatus(i, eventCount, HP, phoenixdown);
             cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
@@ -640,6 +680,7 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
             continue;
         }// event 18
         if (event[i] == 19) {
+            readAcle(alceFile, alce, r1, c1);
             event19++;
             if (c1 == 0) {
                 rescue = rescueStatus(i, eventCount, HP, phoenixdown);
@@ -680,6 +721,6 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                 display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
                 continue;
             }
-        } 
+        }
         }
     }
