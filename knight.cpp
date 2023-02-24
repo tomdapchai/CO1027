@@ -106,6 +106,10 @@ int cursedCheck(int tiny, int frog, int &HP, int &level, int tempLV, int tempHP)
     }
     else return level;
 }
+int nearestPrime(int n) {
+    while (!primeCheck(n)) n++;
+    return n;
+}
 int nearestFibo(int n) {
     if (n == 1) return 1;
     int delta0 = abs(n - fibo(0));
@@ -116,6 +120,8 @@ int nearestFibo(int n) {
         delta1 = abs(n - fibo(i + 1));
         i++;
     }
+    if (fibo(i - 1) > n) return fibo(i - 2);
+    else
     return fibo(i - 1);
 }
 void mushType1(int* arr, int arraySize ,int &mini, int &maxi, int &HP) {
@@ -219,9 +225,6 @@ void mushType4(int* arr1, int arraySize, int &max2_3x, int &max2_3i, int &HP) {
     }
     }
     HP = HP - (max2_3x + max2_3i);
-}
-int chartoint(char n){
-    return (int) n - 48;
 }
 void readMush(string mushFile, int* mush, int &mushSize) {
     int data;
@@ -561,7 +564,7 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
             continue;
             }
         } // event 7
-        if (event[i] == 11) {
+        if (event[i] == 11) { //increment to nearest prime
             int n1 = ((level + phoenixdown) % 5 + 1) * 3;
             int s1 = 0;
             int bigodd = 99;
@@ -570,12 +573,13 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                 bigodd -= 2;
             }
             HP += s1 % 100;
+            HP = nearestPrime(HP);
             HP = HPCheck(HP, maxHP);
             rescue = rescueStatus(i, eventCount, HP, phoenixdown);
             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
             continue;
         } // event 11
-        if (event[i] == 12) {
+        if (event[i] == 12) { // drop to neareat fibo
             HP = nearestFibo(HP);
             cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
             rescue = rescueStatus(i, eventCount, HP, phoenixdown);
