@@ -1,5 +1,3 @@
-#include <math.h>
-#include <string>
 #ifndef __KNIGHT_H__
 #define __KNIGHT_H__
 #include "main.h"

@@ -9,9 +9,8 @@ int r1, c1;
 bool primeCheck(int a){
     if (a <= 1) return false;
     if (a == 2 || a == 3) return true;
-    for (int i = 2; i <= sqrt(a); i++) {
+    for (int i = 2; i <= a / 2; i++)
         if (a % i == 0) return false;
-    }
     return true;
 }
 int fibo(int n) {
@@ -20,9 +19,8 @@ int fibo(int n) {
     if (n == 1) return 1;
     a[0] = 1;
     a[1] = 1;
-    for (int i = 2; i <= n; i++) {
+    for (int i = 2; i <= n; i++)
         a[i] = a[i - 1] + a[i - 2];
-    }
     return a[n];
 }
 int levelO(int x) {
@@ -66,6 +64,14 @@ bool deadCheck(int HP, int phoenixdown){
     if (HP <= 0 && !phoenixCheck(phoenixdown)) return true;
     else return false;
 }
+bool winCheck (int level, int x) {
+    if (level > levelO(x)) return true;
+    else return false;
+}
+bool tieCheck (int level, int x) {
+    if (level == levelO(x)) return true;
+    else return false;
+}
 bool downsideCheck (int *arr, int n) {
     int k = 0;
     while ((arr[k] > arr[k + 1]) && (k < n - 1)) k++;
@@ -94,19 +100,25 @@ int rescueStatus(int i, int eventCount, int HP, int phoenixdown) {
     else if (i == eventCount) return 1;
     else if (i < eventCount) return -1;
 }
-int cursedCheck(int tiny, int frog, int &HP, int &level, int tempLV, int tempHP) {
+void cursed(int &tiny, int &frog) {
+    if (tiny > 0) tiny --;
+    if (frog > 0) frog --;
+}
+void cursedCheck(int &tiny, int &frog, int &HP, int &level, int &tempLV, int &tempHP) {
     if (tiny == 0) {
+        tiny = -1;
         HP *= 5;
-        return HPCheck(HP, tempHP);
+        HP = HPCheck(HP, tempHP);
+        tempHP = 0;
     }
-    else return HP;
     if (frog == 0) {
+        frog = -1;
         level = tempLV;
-        return level;
+        tempLV = 0;
     }
-    else return level;
 }
 int nearestPrime(int n) {
+    if (primeCheck(n)) n++;
     while (!primeCheck(n)) n++;
     return n;
 }
@@ -382,21 +394,35 @@ void readAcle(string alceFile, int alce[][100], int &r1, int &c1) {
     }
     f.close();
 }
-void readFile(string file_input, string *file, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, int* event, int &eventCount, string &mushFile, string &merlinFile, string &alceFile) {
+void readFile(string file_input, string *file, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, string* event, int &eventCount, string &mushFile, string &merlinFile, string &alceFile) {
     int* data = new int[100];
     ifstream f;
     f.open(file_input);
     int x;
     int i = 0;
-    while (f >> x){
+    while (f >> x && i < 5){
         data[i] = x;
         i++;
     }
-    eventCount = i - 5;
     HP = data[0]; level = data[1]; remedy = data[2]; maidenkiss = data[3]; phoenixdown = data[4];
-    for (int k = 1; k <= i - 5; k++)
-    event[k] = data[k + 4];
     f.close();
+    ifstream f0;
+    f0.open(file_input);
+    string line0;
+    getline(f0, line0);
+    getline(f0, line0);
+    int h = 1;
+    for (int m = 0; m < line0.length(); m++) {
+        int j = m;
+        while (line0[j] != ' ' && j < line0.length()) {
+            event[h] += line0[j];
+            j++;
+        }
+        h++;
+        m = j;
+    }
+    eventCount = --h;
+    f0.close();
     ifstream f1;
     f1.open(file_input);
     string line;
@@ -416,14 +442,6 @@ void readFile(string file_input, string *file, int & HP, int & level, int & reme
     f1.close();
     mushFile = file[0]; merlinFile = file[2]; alceFile = file[1];
 }
-bool winCheck (int level, int x) {
-    if (level > levelO(x)) return true;
-    if (level < levelO(x)) return false;
-}
-bool tieCheck (int level, int x) {
-    if (level == levelO(x)) return true;
-    else return false;
-}
 void display(int HP, int level, int remedy, int maidenkiss, int phoenixdown, int rescue) {
     cout << "HP=" << HP
         << ", level=" << level
@@ -435,7 +453,7 @@ void display(int HP, int level, int remedy, int maidenkiss, int phoenixdown, int
 void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, int & rescue) {
     string mushFile, merlinFile, alceFile;
     int eventCount = 0;
-    int* event = new int [100];
+    string* event = new string [100];
     readFile(file_input, file, HP, level, remedy, maidenkiss, phoenixdown, event, eventCount, mushFile, merlinFile, alceFile);
     int tempHP = 0;
     int tempLV = 0;
@@ -445,49 +463,37 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
     int event18 = 0;
     int event19 = 0; // only meet once
     for (int i = 1; i <= eventCount; i++) {
-        if (event18 && event[i] == 18) {
+        if (event18 && event[i] == "18") {
             rescue = rescueStatus(i, eventCount, HP, phoenixdown);
             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
             continue;
         }
-        if (event19 && event[i] == 19) {
+        if (event19 && event[i] == "19") {
             rescue = rescueStatus(i, eventCount, HP, phoenixdown);
             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
             continue;
         }
-        if (tiny == 0) {
-        HP *= 5;
-        if (HP > tempHP) HP = tempHP;
-        tiny = -1;
-        tempHP = 0;
-        }
-        else if (tiny > 0) {
+        if (tiny > 0 && event[i] == "6" || event[i] == "7") {
             tiny --;
-            if (event[i] == 6 || event[i] == 7) {
                 rescue = rescueStatus(i, eventCount, HP, phoenixdown);
+                cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
                 display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
                 continue;
-            }
         }
-        if (frog == 0) {
-        level = tempLV;
-        frog = -1;
-        tempLV = 0;
-        }
-        else if (frog > 0) {
+        if (frog > 0 && event[i] == "6" || event[i] == "7") {
             frog --;
-            if (event[i] == 6 || event[i] == 7) {
                 rescue = rescueStatus(i, eventCount, HP, phoenixdown);
+                cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
                 display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
                 continue;
-            }
-        } // actually all these tiny and frog can be done all in cursedCheck but I'm lazy as cursedCheck was borned after this, it still works fine btw
-        if (event[i] == 0) {
+        }
+        cursed(tiny, frog);
+        if (event[i] == "0") {
             rescue = 1;
             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
             break;
         }
-        if (event[i] >= 1 && event[i] <= 5) {
+        if (event[i] == "1" || event[i] == "2" || event[i] == "3" || event[i] == "4" || event[i] == "5") {
             if (level >= levelO(i) || checkLancelot(maxHP) || checkArthur(maxHP)) {
                 if (level > levelO(i)) {
                     level ++;
@@ -495,8 +501,9 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                 }
             }
             else {
+                int eventTemp = stoi(event[i]);
                 float baseDamage;
-                switch (event[i]){
+                switch (eventTemp){
                 case 1:
                     baseDamage = 1;
                     break;
@@ -518,22 +525,17 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
             int damage = baseDamage * levelO(i) * 10;
             HP -= damage;
             if (HP <= 0 && phoenixCheck(phoenixdown)) {
-                HP = maxHP;
-                phoenixdown --;
-            }
-            }
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            if (rescue == 0) break;
-            continue;
+                    HP = maxHP;
+                    phoenixdown --;
+                    }
+                }
             } // event 1 -> 5
-            if (event[i] == 6) {
+        if (event[i] == "6") {
             if (winCheck(level, i) || checkLancelot(maxHP) || checkArthur(maxHP)) {
                     level = level + 2;
                     level = levelCheck(level);
                 }
-            if (!winCheck(level, i)) {
+            if (!winCheck(level, i) && !tieCheck(level, i)) {
                 if (remedyCheck(remedy))
                     remedy --;
                 else {
@@ -544,57 +546,40 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                 }
             }
             if (tieCheck(level, i)) goto here;
-            here:
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         } // event 6
-        if (event[i] == 7) {
+        if (event[i] == "7") {
              if (winCheck(level, i) || checkLancelot(maxHP) || checkArthur(maxHP)) {
                     level = level + 2;
                     level = levelCheck(level);
                 }
-            if (!winCheck(level, i)) {
+            if (!winCheck(level, i) && !tieCheck(level, i)) {
                 if (maidenCheck(maidenkiss)) maidenkiss --;
                 else {
                     tempLV = level;
                     frog = 3;
                     level = 1;
                 }
-            if (tieCheck(level, i)) goto here1;
-            here1:
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
+            if (tieCheck(level, i)) goto here;
             }
         } // event 7
-        if (event[i] == 11) { //increment to nearest prime
+        if (event[i] == "11") { //increment to nearest prime
             int n1 = ((level + phoenixdown) % 5 + 1) * 3;
             int s1 = 0;
             int bigodd = 99;
-            for (int j = 0; j <= n1; j++) {
+            for (int j = 0; j < n1; j++) {
                 s1 += bigodd;
                 bigodd -= 2;
             }
             HP += s1 % 100;
             HP = nearestPrime(HP);
             HP = HPCheck(HP, maxHP);
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         } // event 11
-        if (event[i] == 12) { // drop to neareat fibo
+        if (event[i] == "12") { // drop to neareat fibo
             HP = nearestFibo(HP);
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         }// event 12
-        if (event[i] > 99) {
+        if (event[i].length() > 2) {
             readMush(mushFile, mush, mushSize);
-            string sequence = to_string(event[i]);
-            sequence.erase(0,2);
+            string sequence = event[i].erase(0, 2);
             for (int j = 0; j < sequence.length(); j ++) {
                 switch (sequence[j]) {
                     case '1':
@@ -649,12 +634,8 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                         break;
                 }
             }
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         }// event 13
-        if (event[i] == 15) {
+        if (event[i] == "15") {
             remedy ++;
             remedy = itemCheck(remedy);
             if (tiny > 0) {
@@ -663,12 +644,8 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                 HP = HPCheck(HP, tempHP);
                 tiny = -1;
             }
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         } // event 15
-        if (event[i] == 16) {
+        if (event[i] == "16") {
             maidenkiss ++;
             maidenkiss = itemCheck(maidenkiss);
             if (frog > 0) {
@@ -676,39 +653,21 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                 level = tempLV;
                 maidenkiss --;
             }
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         } // event 16
-        if (event[i] == 17) {
+        if (event[i] == "17") {
             phoenixdown ++;
             phoenixdown = itemCheck(phoenixdown);
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         } // event 17
-        if (event[i] == 18) {
+        if (event[i] == "18") {
             readMerlin(merlinFile, merlin, n9);
             merlinBless(merlin, n9, HP);
             HP = HPCheck(HP, maxHP);
             event18++;
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         }// event 18
-        if (event[i] == 19) {
+        if (event[i] == "19") {
             readAcle(alceFile, alce, r1, c1);
             event19++;
-            if (c1 == 0) {
-                rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-                cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-                display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-                continue;
-            }
-            else {
+            if (c1 > 0) {
                 acleBless(alce, r1, c1, remedy, maidenkiss, phoenixdown);
                 if (tiny > 0 && remedyCheck(remedy)) {
                     HP *= 5;
@@ -722,25 +681,20 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                     maidenkiss --;
                 }
             }
-            rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-            cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-            display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-            continue;
         }// event 19
-        if (event[i] == 99) {
+        if (event[i] == "99") {
             if ((!checkLancelot(maxHP) && !checkArthur(maxHP) && level < 10) || (checkLancelot(maxHP) && level < 8)) {
                 rescue = 0;
                 cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
                 display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
                 break;
             }
-            else {
-                level = 10;
-                rescue = rescueStatus(i, eventCount, HP, phoenixdown);
-                cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
-                display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
-                continue;
-            }
+            else level = 10;
         }
-        }
+        here:
+        rescue = rescueStatus(i, eventCount, HP, phoenixdown);
+        cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
+        display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
+        if (rescue == 0) break;
     }
+}
