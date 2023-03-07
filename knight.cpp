@@ -136,7 +136,7 @@ int nearestFibo(int n) {
     else if (fibo(i - 1) == n) return fibo(i - 2);
     else return fibo(i - 1);
 }
-void mushType1(int* arr, int arraySize ,int &mini, int &maxi, int &HP) {
+void mushType1(int* arr, int arraySize ,int &mini, int &maxi, int &HP, int maxHP) {
     int maxN = arr[0];
     int minN = arr[0];
     for (int j = 0; j < arraySize; j++)
@@ -145,14 +145,15 @@ void mushType1(int* arr, int arraySize ,int &mini, int &maxi, int &HP) {
             maxi = j;
             maxN = arr[j];
         }
-        if (arr[j] <= minN) {
+        if (minN >= arr[j]) {
             mini = j;
-            minN == arr[j];
+            minN = arr[j];
         }
     }
     HP = HP - (maxi + mini);
+    HP = HPCheck(HP, maxHP);
 }
-void mushType2(int* arr, int arraySize ,int &mtx, int &mti, int &HP) {
+void mushType2(int* arr, int arraySize ,int &mtx, int &mti, int &HP, int maxHP) {
     if (!mountainCheck(arr, arraySize, pos)) {
         mtx = -2;
         mti = -3;
@@ -172,8 +173,9 @@ void mushType2(int* arr, int arraySize ,int &mtx, int &mti, int &HP) {
         }
     }
     HP = HP - (mtx + mti);
+    HP = HPCheck(HP, maxHP);
 }
-void mushType3(int* arr1, int arraySize, int &maxi2,int &mini2, int &HP) {
+void mushType3(int* arr1, int arraySize, int &maxi2,int &mini2, int &HP, int maxHP) {
     int *arr = new int [100];
     for (int k = 0; k <= arraySize; k++)
     arr[k] = arr1[k];
@@ -197,8 +199,9 @@ void mushType3(int* arr1, int arraySize, int &maxi2,int &mini2, int &HP) {
     while (maxN != arr[maxi2]) maxi2 ++;
     while (minN != arr[mini2]) mini2 ++;
     HP = HP - (maxi2 + mini2);
+    HP = HPCheck(HP, maxHP);
 }
-void mushType4(int* arr1, int arraySize, int &max2_3x, int &max2_3i, int &HP) {
+void mushType4(int* arr1, int arraySize, int &max2_3x, int &max2_3i, int &HP, int maxHP) {
     int *arr = new int [100];
     for (int k = 0; k <= arraySize; k++)
     arr[k] = arr1[k];
@@ -211,7 +214,7 @@ void mushType4(int* arr1, int arraySize, int &max2_3x, int &max2_3i, int &HP) {
         max2_3i = -7;
     }
     else {
-        int maxN = arr[0];
+    int maxN = arr[0];
     int minN = arr[0];
     for (int j = 0; j <= 2; j++)
     {
@@ -237,6 +240,7 @@ void mushType4(int* arr1, int arraySize, int &max2_3x, int &max2_3i, int &HP) {
     }
     }
     HP = HP - (max2_3x + max2_3i);
+    HP = HPCheck(HP, maxHP);
 }
 void readMush(string mushFile, int* mush, int &mushSize) {
     int data;
@@ -396,41 +400,26 @@ void readAcle(string alceFile, int alce[][100], int &r1, int &c1) {
 }
 void readFile(string file_input, string *file, int & HP, int & level, int & remedy, int & maidenkiss, int & phoenixdown, string* event, int &eventCount, string &mushFile, string &merlinFile, string &alceFile) {
     int* data = new int[100];
+    string *data1 = new string[100];
+    string line;
     ifstream f;
     f.open(file_input);
-    int x;
+    string x;
     int i = 0;
-    while (f >> x && i < 5){
-        data[i] = x;
+    while (f >> x) {
+        data1[i] = x;
         i++;
     }
+    line = data1[i - 1];
+    for (int j = 0; j < 5; j ++) {
+        int t = 0;
+        t = stoi(data1[j]);
+        data[j] = t;
+    }
+    eventCount = i - 6;
     HP = data[0]; level = data[1]; remedy = data[2]; maidenkiss = data[3]; phoenixdown = data[4];
-    f.close();
-    ifstream f0;
-    f0.open(file_input);
-    string line0;
-    getline(f0, line0);
-    getline(f0, line0);
-    int h = 1;
-    for (int m = 0; m < line0.length(); m++) {
-        int j = m;
-        while (line0[j] != ' ' && j < line0.length()) {
-            event[h] += line0[j];
-            j++;
-        }
-        h++;
-        m = j;
-    }
-    eventCount = --h;
-    f0.close();
-    ifstream f1;
-    f1.open(file_input);
-    string line;
-    int k = 0;
-    while (k < 3) {
-        getline(f1, line);
-        k++;
-    }
+    for (int n = 1; n <= eventCount; n++)
+        event[n] = data1[n + 4];
     int m = 0;
     for (int n = 0; n < 3; n ++) {
         while (line[m] != ',' && m < line.length()) {
@@ -439,7 +428,7 @@ void readFile(string file_input, string *file, int & HP, int & level, int & reme
         }
         m++;
     }
-    f1.close();
+    f.close();
     mushFile = file[0]; merlinFile = file[2]; alceFile = file[1];
 }
 void display(int HP, int level, int remedy, int maidenkiss, int phoenixdown, int rescue) {
@@ -473,14 +462,14 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
             display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
             continue;
         }
-        if (tiny > 0 && event[i] == "6" || event[i] == "7") {
+        if (tiny > 0 && (event[i] == "6" || event[i] == "7")) {
             tiny --;
                 rescue = rescueStatus(i, eventCount, HP, phoenixdown);
                 cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
                 display(HP, level, remedy, maidenkiss, phoenixdown, rescue);
                 continue;
         }
-        if (frog > 0 && event[i] == "6" || event[i] == "7") {
+        if (frog > 0 && (event[i] == "6" || event[i] == "7")) {
             frog --;
                 rescue = rescueStatus(i, eventCount, HP, phoenixdown);
                 cursedCheck(tiny, frog, HP, level, tempLV, tempHP);
@@ -495,7 +484,7 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
         }
         if (event[i] == "1" || event[i] == "2" || event[i] == "3" || event[i] == "4" || event[i] == "5") {
             if (level >= levelO(i) || checkLancelot(maxHP) || checkArthur(maxHP)) {
-                if (level > levelO(i)) {
+                if (level > levelO(i) || checkLancelot(maxHP) || checkArthur(maxHP)) {
                     level ++;
                     level = levelCheck(level);
                 }
@@ -548,12 +537,14 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
             if (tieCheck(level, i)) goto here;
         } // event 6
         if (event[i] == "7") {
-             if (winCheck(level, i) || checkLancelot(maxHP) || checkArthur(maxHP)) {
+            if (winCheck(level, i) || checkLancelot(maxHP) || checkArthur(maxHP)) {
                     level = level + 2;
                     level = levelCheck(level);
                 }
             if (!winCheck(level, i) && !tieCheck(level, i)) {
-                if (maidenCheck(maidenkiss)) maidenkiss --;
+                if (maidenCheck(maidenkiss)) {
+                    maidenkiss --;
+                }
                 else {
                     tempLV = level;
                     frog = 3;
@@ -583,7 +574,7 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
             for (int j = 0; j < sequence.length(); j ++) {
                 switch (sequence[j]) {
                     case '1':
-                        mushType1(mush, mushSize, mini, maxi, HP);
+                        mushType1(mush, mushSize, mini, maxi, HP, maxHP);
                         if (HP <= 0 && phoenixCheck(phoenixdown)) {
                             HP = maxHP;
                             phoenixdown --;
@@ -595,7 +586,7 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                         }
                         break;
                     case '2':
-                        mushType2(mush, mushSize, mtx, mti, HP);
+                        mushType2(mush, mushSize, mtx, mti, HP, maxHP);
                         if (HP <= 0 && phoenixCheck(phoenixdown)) {
                             HP = maxHP;
                             phoenixdown --;
@@ -607,7 +598,7 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                         }
                         break;
                     case '3':
-                        mushType3(mush, mushSize, maxi2, mini2, HP);
+                        mushType3(mush, mushSize, maxi2, mini2, HP, maxHP);
                         if (HP <= 0 && phoenixCheck(phoenixdown)) {
                             HP = maxHP;
                             phoenixdown --;
@@ -619,7 +610,7 @@ void adventureToKoopa(string file_input, int & HP, int & level, int & remedy, in
                         }
                         break;
                     case '4':
-                        mushType4(mush, mushSize, max2_3x, max2_3i, HP);
+                        mushType4(mush, mushSize, max2_3x, max2_3i, HP, maxHP);
                         if (HP <= 0 && phoenixCheck(phoenixdown)) {
                             HP = maxHP;
                             phoenixdown --;
